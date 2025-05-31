@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск авиабилетов</title>
+    <link rel="icon"
+        href="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60">
+    <style>
+        /* Общие стили */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            min-width: 320px;
+        }
+
+        /* Шапка */
+        .header {
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+
+        /* Поисковая форма */
+        .search-container {
+            background: white;
+            padding: 30px;
+            margin: 30px auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 800px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .search-group {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .search-input:focus {
+            border-color: #00b4d8;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 180, 216, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: #a0a0a0;
+            font-style: italic;
+        }
+
+        .search-button {
+            background: linear-gradient(135deg, #00b4d8, #0096c7);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 180, 216, 0.3);
+        }
+
+        /* Подсказки */
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .autocomplete-suggestion {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .autocomplete-suggestion:hover {
+            background-color: #f5f7fa;
+        }
+
+        /* Стили для счётчика пассажиров */
+        .passenger-counter {
+            display: flex;
+            align-items: center;
+        }
+
+        .passenger-label {
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .counter-btn {
+            width: 50px;
+            height: 30px;
+            background: #f0f0f0;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .counter-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .counter-value {
+            width: 100%;
+            text-align: center;
+            border-left: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .ticket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .ticket-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .ticket-info {
+            flex: 1;
+        }
+
+        .ticket-price {
+            padding-right: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #00b4d8;
+        }
+
+        .buy-button {
+            padding: 10px 20px;
+            background: #0077b6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Контейнер с билетами */
+        .ticket-head {
+            color: black;
+            font-size: 2em;
+        }
+
+        .tickets-wrapper {
+            text-align: center;
+            padding: 0 20px;
+            margin-bottom: 40px;
+        }
+
+        .tickets-container {
+            display: inline-block;
+            background: white;
+            padding: 25px;
+            margin: 20px auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            min-width: 300px;
+            max-width: 95%;
+        }
+
+        .ticket-card {
+            display: inline-block;
+            vertical-align: top;
+            background: white;
+            border-radius: 10px;
+            width: 280px;
+            margin: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .ticket-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+
+        .ticket-info {
+            padding: 20px;
+            text-align: left;
+        }
+
+        .ticket-route {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #0077b6;
+        }
+
+        .ticket-dates {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .ticket-price {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #0077b6;
+        }
+
+        /* Подвал */
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Поиск дешёвых авиабилетов</h1>
+        <p>Сравните цены от 1000+ авиакомпаний</p>
+    </div>
+
+    <div class="search-container">
+        <form class="search-form" id="searchForm">
+            <div class="search-group">
+                <input type="text" class="search-input" id="from-input" placeholder="Откуда (город или аэропорт)"
+                    value="Москва" readonly>
+                <div class="autocomplete-suggestions" id="from-suggestions"></div>
+            </div>
+
+            <div class="search-group">
+                <input type="text" class="search-input" id="to-input" placeholder="Куда (город или аэропорт)"
+                    autocomplete="off">
+                <div class="autocomplete-suggestions" id="to-suggestions"></div>
+            </div>
+
+            <!-- Счётчик пассажиров -->
+            <div class="passenger-counter">
+                <span class="passenger-label">Пассажиры:</span>
+                <div class="counter-controls">
+                    <button type="button" class="counter-btn minus">-</button>
+                    <span class="counter-value">1 человек</span>
+                    <button type="button" class="counter-btn plus">+</button>
+                </div>
+            </div>
+
+            <div class="search-group">
+                <input type="date" class="search-input" id="departure-date" placeholder="Дата вылета">
+            </div>
+
+            <button type="submit" class="search-button">Найти билеты</button>
+        </form>
+    </div>
+
+    <!-- Модальное окно с результатами поиска -->
+    <div class="modal" id="resultsModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2>Результаты поиска</h2>
+            <div id="searchParams"></div>
+            <div class="ticket-list" id="ticketList">
+                <!-- Билеты будут добавляться сюда через JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <div class="tickets-wrapper">
+        <div class="tickets-container">
+            <div class="ticket-head">
+                <p>Популярные направления</p>
+            </div>
+
+            <div class="ticket-card">
+                <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+                    alt="Париж" class="ticket-image">
+                <div class="ticket-info">
+                    <div class="ticket-route">Москва → Париж</div>
+                    <div class="ticket-dates">15 июня - 22 июня 2024</div>
+                    <div class="ticket-price">12 450 ₽</div>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+                    alt="Лондон" class="ticket-image">
+                <div class="ticket-info">
+                    <div class="ticket-route">Санкт-Петербург → Лондон</div>
+                    <div class="ticket-dates">10 июля - 20 июля 2024</div>
+                    <div class="ticket-price">15 800 ₽</div>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <img src="https://images.unsplash.com/photo-1483729558449-99ef09a8c325?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+                    alt="Нью-Йорк" class="ticket-image">
+                <div class="ticket-info">
+                    <div class="ticket-route">Казань → Нью-Йорк</div>
+                    <div class="ticket-dates">5 августа - 15 августа 2024</div>
+                    <div class="ticket-price">32 900 ₽</div>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <img src="https://images.unsplash.com/photo-1483729558449-99ef09a8c325?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+                    alt="Нью-Йорк" class="ticket-image">
+                <div class="ticket-info">
+                    <div class="ticket-route">Казань → Нью-Йорк</div>
+                    <div class="ticket-dates">5 августа - 15 августа 2024</div>
+                    <div class="ticket-price">32 900 ₽</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 AviaSearch. Все права защищены.</p>
+    </div>
+
+    <script>
+        // База данных городов и аэропортов
+        const cities = [
+            "Москва (Шереметьево)",
+            "Москва (Домодедово)",
+            "Санкт-Петербург (Пулково)",
+            "Екатеринбург (Кольцово)",
+            "Казань (Казань)",
+            "Новосибирск (Толмачёво)",
+            "Сочи (Адлер)",
+            "Владивосток (Кневичи)",
+            "Париж (Шарль-де-Голль)",
+            "Лондон (Хитроу)",
+            "Нью-Йорк (JFK)",
+            "Стамбул (Стамбул)",
+            "Дубай (DXB)",
+            "Токио (Нарита)",
+            "Усть-Байкальск"
+        ];
+
+        // Функция для отображения подсказок
+        function showSuggestions(input, suggestionsContainer) {
+            const inputValue = input.value.toLowerCase();
+            if (inputValue.length < 2) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            const filteredCities = cities.filter(city =>
+                city.toLowerCase().includes(inputValue)
+            );
+
+            if (filteredCities.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            suggestionsContainer.innerHTML = filteredCities.map(city =>
+                `<div class="autocomplete-suggestion">${city}</div>`
+            ).join('');
+
+            suggestionsContainer.style.display = 'block';
+        }
+
+        // Обработчики событий
+        const fromInput = document.getElementById('from-input');
+        const fromSuggestions = document.getElementById('from-suggestions');
+        const toInput = document.getElementById('to-input');
+        const toSuggestions = document.getElementById('to-suggestions');
+
+        fromInput.addEventListener('input', () => {
+            showSuggestions(fromInput, fromSuggestions);
+        });
+
+        toInput.addEventListener('input', () => {
+            showSuggestions(toInput, toSuggestions);
+        });
+
+        // Клик по подсказке
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('autocomplete-suggestion')) {
+                const input = e.target.closest('.search-group').querySelector('.search-input');
+                input.value = e.target.textContent;
+                input.focus();
+                document.querySelectorAll('.autocomplete-suggestions').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+        });
+
+        // Скрытие подсказок при клике вне
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('search-input')) {
+                document.querySelectorAll('.autocomplete-suggestions').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+        });
+
+        // Обработчик для счётчика пассажиров
+        document.addEventListener('DOMContentLoaded', function () {
+            const minusBtn = document.querySelector('.counter-btn.minus');
+            const plusBtn = document.querySelector('.counter-btn.plus');
+            const counterValue = document.querySelector('.counter-value');
+
+            let passengers = 1;
+
+            function updateCounter() {
+                counterValue.textContent = passengers + (passengers === 1 ? ' человек' : ' человека');
+            }
+
+            minusBtn.addEventListener('click', function () {
+                if (passengers > 1) {
+                    passengers--;
+                    updateCounter();
+                }
+            });
+
+            plusBtn.addEventListener('click', function () {
+                passengers++;
+                updateCounter();
+            });
+        });
+
+        // Обработчик формы поиска
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Получаем данные из формы
+            const from = document.getElementById('from-input').value;
+            const to = document.getElementById('to-input').value;
+            const departureDate = document.getElementById('departure-date').value;
+
+            // Показываем параметры поиска
+            document.getElementById('searchParams').innerHTML = `
+                <p><strong>Маршрут:</strong> ${from} → ${to}</p>
+                <p><strong>Дата вылета:</strong> ${departureDate || 'Не указана'}</p>
+            `;
+
+            // Генерируем тестовые билеты
+            generateTickets(from, to);
+
+            // Показываем модальное окно
+            document.getElementById('resultsModal').style.display = 'flex';
+        });
+
+        // Закрытие модального окна
+        document.getElementById('closeModal').addEventListener('click', function () {
+            document.getElementById('resultsModal').style.display = 'none';
+        });
+
+        // Закрытие при клике вне окна
+        window.addEventListener('click', function (e) {
+            if (e.target === document.getElementById('resultsModal')) {
+                document.getElementById('resultsModal').style.display = 'none';
+            }
+        });
+
+        // Функция генерации тестовых билетов
+        function generateTickets(from, to) {
+            const ticketList = document.getElementById('ticketList');
+            ticketList.innerHTML = '';
+
+            // Массив с тестовыми данными
+            const tickets = [
+                {
+                    airline: "Аэрофлот",
+                    price: "12 450 ₽",
+                    departureTime: "08:30",
+                    arrivalTime: "10:45",
+                    duration: "2ч 15м"
+                },
+                {
+                    airline: "S7 Airlines",
+                    price: "10 900 ₽",
+                    departureTime: "14:20",
+                    arrivalTime: "16:35",
+                    duration: "2ч 15м"
+                },
+                {
+                    airline: "Победа",
+                    price: "8 500 ₽",
+                    departureTime: "19:45",
+                    arrivalTime: "22:00",
+                    duration: "2ч 15м"
+                }
+            ];
+
+            // Добавляем билеты в список
+            tickets.forEach(ticket => {
+                const ticketItem = document.createElement('div');
+                ticketItem.className = 'ticket-item';
+                ticketItem.innerHTML = `
+                    <div class="ticket-info">
+                        <h3>${from} → ${to}</h3>
+                        <p>${ticket.airline}</p>
+                        <p>${ticket.departureTime} - ${ticket.arrivalTime} (${ticket.duration})</p>
+                    </div>
+                    <div class="ticket-price">${ticket.price}</div>
+                    <button class="buy-button">Купить</button>
+                `;
+                ticketList.appendChild(ticketItem);
+            });
+        }
+    </script>
+</body>
+
+</html>
