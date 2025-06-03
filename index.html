@@ -59,6 +59,17 @@
         </div>
     </div>
 
+    <!-- Второе модальное окно -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closePaymentModal">&times;</span>
+            <h2>Билеты забронированы!</h2>
+            <p>Ваши билеты на рейс <span id="bookedFlight"></span> зарезервированы до <span
+                    id="reservationTime"></span>.</p>
+            <button id="proceedToPayment" class="payment-button">Перейти к оформлению и оплате</button>
+        </div>
+    </div>
+
     <div class="tickets-wrapper">
         <div class="tickets-container">
             <div class="ticket-head">
@@ -243,17 +254,20 @@
             generateTickets(from, to);
 
             // Показываем модальное окно
+            document.getElementById('resultsModal').classList.add('active');
             document.getElementById('resultsModal').style.display = 'flex';
         });
 
         // Закрытие модального окна
         document.getElementById('closeModal').addEventListener('click', function () {
+            document.getElementById('resultsModal').classList.remove;
             document.getElementById('resultsModal').style.display = 'none';
         });
 
         // Закрытие при клике вне окна
         window.addEventListener('click', function (e) {
             if (e.target === document.getElementById('resultsModal')) {
+                document.getElementById('resultsModal').classList.remove;
                 document.getElementById('resultsModal').style.display = 'none';
             }
         });
@@ -266,6 +280,13 @@
             // Массив с тестовыми данными
             const tickets = [
                 {
+                    airline: "S7 Airlines",
+                    price: "13 750 ₽",
+                    departureTime: "00:35",
+                    arrivalTime: "02:40",
+                    duration: "2ч 05м"
+                },
+                {
                     airline: "Аэрофлот",
                     price: "12 450 ₽",
                     departureTime: "08:30",
@@ -276,15 +297,15 @@
                     airline: "S7 Airlines",
                     price: "10 900 ₽",
                     departureTime: "14:20",
-                    arrivalTime: "16:35",
-                    duration: "2ч 15м"
+                    arrivalTime: "17:05",
+                    duration: "2ч 45м"
                 },
                 {
                     airline: "Победа",
                     price: "8 500 ₽",
                     departureTime: "19:45",
-                    arrivalTime: "22:00",
-                    duration: "2ч 15м"
+                    arrivalTime: "22:50",
+                    duration: "3ч 05м"
                 }
             ];
 
@@ -304,6 +325,36 @@
                 ticketList.appendChild(ticketItem);
             });
         }
+
+        // Обработчик кнопок "Купить"
+        document.body.addEventListener('click', function (e) {
+            console.log("1");
+            if (e.target.classList.contains('buy-button')) {
+                console.log("2");
+
+                // Устанавливаем время резервации (текущее время + 30 минут)
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 30);
+                document.getElementById('reservationTime').textContent =
+                    now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // Закрываем окно результатов и открываем окно оплаты
+                document.getElementById('resultsModal').style.display = 'none';
+                document.getElementById('paymentModal').style.display = 'flex';
+            }
+        });
+
+        // Закрытие окна оплаты
+        document.getElementById('closePaymentModal').addEventListener('click', () => {
+            document.getElementById('paymentModal').style.display = 'none';
+        });
+
+        // Закрытие при клике вне окна
+        window.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('paymentModal')) {
+                document.getElementById('paymentModal').style.display = 'none';
+            }
+        });
     </script>
 </body>
 

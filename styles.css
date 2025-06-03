@@ -226,12 +226,34 @@
      color: white;
      border: none;
      border-radius: 5px;
+     transition: all 0.3s;
      cursor: pointer;
  }
 
- /* Информация о брони билета 
+ /* Стили для второго модального окна */
+ #paymentModal .modal-content {
+     max-width: 400px;
+     text-align: center;
+     padding: 30px;
+ }
 
- .modal- */
+ .payment-button {
+     background: #00b4d8;
+     color: white;
+     border: none;
+     padding: 12px 25px;
+     border-radius: 5px;
+     font-size: 16px;
+     cursor: pointer;
+     margin-top: 25px;
+     width: 100%;
+     transition: all 0.3s;
+     font-weight: bold;
+ }
+
+ .payment-button:hover {
+     background: #0096c7;
+ }
 
  /* Контейнер с билетами */
  .ticket-head {
