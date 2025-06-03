@@ -64,6 +64,14 @@
         <div class="modal-content">
             <span class="close-modal" id="closePaymentModal">&times;</span>
             <h2>Билеты забронированы!</h2>
+            <div class="booking-info">
+                <p><span class="info-label">Маршрут:</span> <span id="bookedFlight"></span></p>
+                <p><span class="info-label">Авиакомпания:</span> <span id="bookedAirline"></span></p>
+                <p><span class="info-label">Дата вылета:</span> <span id="bookedDate"></span></p>
+                <p><span class="info-label">Время:</span> <span id="bookedTime"></span></p>
+                <p><span class="info-label">Количество билетов:</span><span id="bookedTicketsCount"></span></p>
+                <p><span class="info-label">Номер брони:</span> #<span id="bookingNumber"></span></p>
+            </div>
             <p>До окончания бронирования осталось: <span id="countdown">30:00</span></p>
             <button id="proceedToPayment" class="payment-button">Перейти к оформлению и оплате</button>
         </div>
@@ -124,6 +132,8 @@
     <script>
         // Глобальная переменная для хранения таймера
         let reservationTimer;
+        let departureDate;
+        let passengers;
 
         // База данных городов и аэропортов
         const cities = [
@@ -151,6 +161,38 @@
             "Усть-Каменогорск",
             "Усинск",
             "Усть-Кут"
+        ];
+
+        // База данных билетов
+        const tickets = [
+            {
+                airline: "S7 Airlines",
+                price: "13 750 ₽",
+                departureTime: "00:35",
+                arrivalTime: "02:40",
+                duration: "2ч 05м"
+            },
+            {
+                airline: "Аэрофлот",
+                price: "12 450 ₽",
+                departureTime: "08:30",
+                arrivalTime: "10:45",
+                duration: "2ч 15м"
+            },
+            {
+                airline: "S7 Airlines",
+                price: "10 900 ₽",
+                departureTime: "14:20",
+                arrivalTime: "17:05",
+                duration: "2ч 45м"
+            },
+            {
+                airline: "Победа",
+                price: "8 500 ₽",
+                departureTime: "19:45",
+                arrivalTime: "22:50",
+                duration: "3ч 05м"
+            }
         ];
 
         // Функция для отображения подсказок
@@ -218,7 +260,7 @@
             const plusBtn = document.querySelector('.counter-btn.plus');
             const counterValue = document.querySelector('.counter-value');
 
-            let passengers = 1;
+            passengers = 1;
 
             function updateCounter() {
                 counterValue.textContent = passengers + (passengers === 1 ? ' человек' : ' человека');
@@ -244,7 +286,7 @@
             // Получаем данные из формы
             const from = document.getElementById('from-input').value;
             const to = document.getElementById('to-input').value;
-            const departureDate = document.getElementById('departure-date').value;
+            departureDate = document.getElementById('departure-date').value;
 
             // Показываем параметры поиска
             document.getElementById('searchParams').innerHTML = `
@@ -279,49 +321,17 @@
             const ticketList = document.getElementById('ticketList');
             ticketList.innerHTML = '';
 
-            // Массив с тестовыми данными
-            const tickets = [
-                {
-                    airline: "S7 Airlines",
-                    price: "13 750 ₽",
-                    departureTime: "00:35",
-                    arrivalTime: "02:40",
-                    duration: "2ч 05м"
-                },
-                {
-                    airline: "Аэрофлот",
-                    price: "12 450 ₽",
-                    departureTime: "08:30",
-                    arrivalTime: "10:45",
-                    duration: "2ч 15м"
-                },
-                {
-                    airline: "S7 Airlines",
-                    price: "10 900 ₽",
-                    departureTime: "14:20",
-                    arrivalTime: "17:05",
-                    duration: "2ч 45м"
-                },
-                {
-                    airline: "Победа",
-                    price: "8 500 ₽",
-                    departureTime: "19:45",
-                    arrivalTime: "22:50",
-                    duration: "3ч 05м"
-                }
-            ];
-
             // Добавляем билеты в список
             tickets.forEach(ticket => {
                 const ticketItem = document.createElement('div');
                 ticketItem.className = 'ticket-item';
                 ticketItem.innerHTML = `
                     <div class="ticket-info">
-                        <h3>${from} → ${to}</h3>
-                        <p>${ticket.airline}</p>
-                        <p>${ticket.departureTime} - ${ticket.arrivalTime} (${ticket.duration})</p>
+                        <h3 id="flight">${from} → ${to}</h3>
+                        <p id="airline">${ticket.airline}</p>
+                        <p id="time">${ticket.departureTime} - ${ticket.arrivalTime} (${ticket.duration})</p>
                     </div>
-                    <div class="ticket-price">${ticket.price}</div>
+                    <div id="prise" class="ticket-price">${ticket.price}</div>
                     <button class="buy-button">Забронировать</button>
                 `;
                 ticketList.appendChild(ticketItem);
@@ -332,7 +342,16 @@
         document.body.addEventListener('click', function (e) {
             if (e.target.classList.contains('buy-button') && e.target.id !== 'proceedToPayment') {
 
-                const flight = e.target.getAttribute('data-flight');
+                const ticket = e.target.closest('.ticket-item');
+                // Заполняем информацию о брони
+                document.getElementById('bookedFlight').textContent = ticket.querySelector('#flight').textContent;
+                document.getElementById('bookedAirline').textContent = ticket.querySelector('#airline').textContent;
+                document.getElementById('bookedDate').textContent = departureDate.toString();
+                document.getElementById('bookedTime').textContent = ticket.querySelector('#time').textContent;
+                document.getElementById('bookedTicketsCount').textContent = passengers.toString();
+                document.getElementById('bookingNumber').textContent = generateBookingNumber();
+
+                //const flight = e.target.getAttribute('data-flight');
                 startCountdown(30);
 
                 // Закрываем окно результатов и открываем окно оплаты
@@ -379,6 +398,11 @@
                     timeLeft--;
                 }
             }, 1000);
+        }
+
+        // Генератор номера брони
+        function generateBookingNumber() {
+            return Math.floor(100000 + Math.random() * 900000);
         }
 
     </script>

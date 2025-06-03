@@ -237,14 +237,34 @@
      padding: 40px;
  }
 
+ /* Стили для информации о брони */
+ .booking-info {
+     margin: 20px 0;
+     padding: 15px;
+     background: rgb(243, 242, 242);
+     border-radius: 5px;
+ }
+
+ .booking-info p {
+     margin: 8px 0;
+ }
+
+ .info-label {
+     flex: content;
+     font-weight: bold;
+     color: #0077b6;
+     display: inline-block;
+     max-width: 180px;
+ }
+
  #countdown {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: black;
-  display: inline-block;
-  min-width: 60px;
-  text-align: center;
-}
+     font-size: 1.2em;
+     font-weight: bold;
+     color: black;
+     display: inline-block;
+     min-width: 60px;
+     text-align: center;
+ }
 
  .payment-button {
      background: #00b4d8;
