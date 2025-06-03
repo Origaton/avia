@@ -34,28 +34,35 @@ const cities = [
 // База данных билетов
 const tickets = [
     {
-        airline: "S7 Airlines",
+        airline: "SkyWave Airlines",
         price: "13 750 ₽",
         departureTime: "00:35",
         arrivalTime: "02:40",
         duration: "2ч 05м"
     },
     {
-        airline: "Аэрофлот",
+        airline: "Horizon Wings",
         price: "12 450 ₽",
         departureTime: "08:30",
         arrivalTime: "10:45",
         duration: "2ч 15м"
     },
     {
-        airline: "S7 Airlines",
+        airline: "BlueJet Airways",
         price: "10 900 ₽",
         departureTime: "14:20",
         arrivalTime: "17:05",
         duration: "2ч 45м"
     },
     {
-        airline: "Победа",
+        airline: "StellarFly",
+        price: "11 300 ₽",
+        departureTime: "14:50",
+        arrivalTime: "17:10",
+        duration: "2ч 20м"
+    },
+    {
+        airline: "AeroVista Airlines",
         price: "8 500 ₽",
         departureTime: "19:45",
         arrivalTime: "22:50",
