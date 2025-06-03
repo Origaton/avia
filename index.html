@@ -64,8 +64,7 @@
         <div class="modal-content">
             <span class="close-modal" id="closePaymentModal">&times;</span>
             <h2>Билеты забронированы!</h2>
-            <p>Ваши билеты на рейс <span id="bookedFlight"></span> зарезервированы до <span
-                    id="reservationTime"></span>.</p>
+            <p>До окончания бронирования осталось: <span id="countdown">30:00</span></p>
             <button id="proceedToPayment" class="payment-button">Перейти к оформлению и оплате</button>
         </div>
     </div>
@@ -123,6 +122,9 @@
     </div>
 
     <script>
+        // Глобальная переменная для хранения таймера
+        let reservationTimer;
+
         // База данных городов и аэропортов
         const cities = [
             "Москва",
@@ -328,15 +330,10 @@
 
         // Обработчик кнопок "Купить"
         document.body.addEventListener('click', function (e) {
-            console.log("1");
-            if (e.target.classList.contains('buy-button')) {
-                console.log("2");
+            if (e.target.classList.contains('buy-button') && e.target.id !== 'proceedToPayment') {
 
-                // Устанавливаем время резервации (текущее время + 30 минут)
-                const now = new Date();
-                now.setMinutes(now.getMinutes() + 30);
-                document.getElementById('reservationTime').textContent =
-                    now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const flight = e.target.getAttribute('data-flight');
+                startCountdown(30);
 
                 // Закрываем окно результатов и открываем окно оплаты
                 document.getElementById('resultsModal').style.display = 'none';
@@ -355,6 +352,36 @@
                 document.getElementById('paymentModal').style.display = 'none';
             }
         });
+
+        // Функция запуска таймера
+        function startCountdown(durationInMinutes) {
+            const countdownElement = document.getElementById('countdown');
+            let timeLeft = durationInMinutes * 60; // Переводим в секунды
+
+            // Очищаем предыдущий таймер, если он был
+            clearInterval(reservationTimer);
+
+            // Обновляем таймер каждую секунду
+            reservationTimer = setInterval(function () {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+
+                // Форматируем вывод (добавляем ведущий ноль)
+                countdownElement.textContent =
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                // Если время вышло
+                if (timeLeft <= 0) {
+                    clearInterval(reservationTimer);
+                    countdownElement.textContent = "00:00";
+                    countdownElement.style.color = "#888";
+                    document.getElementById('proceedToPayment').disabled = true;
+                } else {
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
     </script>
 </body>
 
