@@ -344,12 +344,14 @@
         // Закрытие окна оплаты
         document.getElementById('closePaymentModal').addEventListener('click', () => {
             document.getElementById('paymentModal').style.display = 'none';
+            clearInterval(reservationTimer);
         });
 
         // Закрытие при клике вне окна
         window.addEventListener('click', (e) => {
             if (e.target === document.getElementById('paymentModal')) {
                 document.getElementById('paymentModal').style.display = 'none';
+                clearInterval(reservationTimer);
             }
         });
 
@@ -357,9 +359,6 @@
         function startCountdown(durationInMinutes) {
             const countdownElement = document.getElementById('countdown');
             let timeLeft = durationInMinutes * 60; // Переводим в секунды
-
-            // Очищаем предыдущий таймер, если он был
-            clearInterval(reservationTimer);
 
             // Обновляем таймер каждую секунду
             reservationTimer = setInterval(function () {
